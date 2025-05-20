@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen de Física</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .section {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .correct { color: green; }
+    .incorrect { color: red; }
+    .question { margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+
+  <h1>Examen de Física</h1>
+
+  <div class="section">
+    <label for="studentName"><strong>Nombre del estudiante:</strong></label>
+    <input type="text" id="studentName">
+    <button id="startBtn">Iniciar Examen</button>
+    <button id="showResultsBtn">Ver Resultados Guardados</button>
+  </div>
+
+  <div id="examSection" class="section" style="display:none;"></div>
+  <div id="resultSection" class="section"></div>
+  <div id="storedResults" class="section" style="display:none;"></div>
+
+  <script>
+    const preguntas = [
+      { pregunta: "¿Qué es un péndulo simple?", opciones: ["Un objeto que rueda", "Un cuerpo que cuelga y se mueve", "Un resorte que se estira", "Una bola que flota"], correcta: 1 },
+      { pregunta: "¿Cuál es el período de un péndulo de 1 metro?", opciones: ["1 segundo", "2 segundos", "3 segundos", "4 segundos"], correcta: 1 },
+      { pregunta: "Si el período es 2 segundos, ¿cuánto mide el péndulo?", opciones: ["0.5 m", "1 m", "1.5 m", "2 m"], correcta: 1 },
+      { pregunta: "¿Qué sucede con el período si se aumenta la longitud del péndulo?", opciones: ["El período disminuye", "El período no cambia", "El período aumenta", "El péndulo se detiene"], correcta: 2 },
+      { pregunta: "¿Qué ley describe el comportamiento de un resorte ideal?", opciones: ["Ley de Newton", "Ley de Hooke", "Ley de Ohm", "Ley de Pascal"], correcta: 1 },
+      { pregunta: "¿Cuál es la constante de elasticidad de un resorte que se estira 0.5 m al aplicarle una fuerza de 10 N?", opciones: ["20 N/m", "10 N/m", "5 N/m", "2 N/m"], correcta: 0 },
+      { pregunta: "¿Qué sucede si se comprime un resorte?", opciones: ["El resorte se rompe", "El resorte genera una fuerza hacia adentro", "No pasa nada", "El resorte se calienta"], correcta: 1 },
+      { pregunta: "¿Qué es una onda?", opciones: ["Un sonido que solo se escucha en el agua", "Una perturbación que se propaga en el espacio", "Un objeto que vibra sin moverse", "Un tipo de energía que no se mueve"], correcta: 1 },
+      { pregunta: "¿Qué tipo de onda es el sonido?", opciones: ["Electromagnética", "Transversal", "Longitudinal", "Luminosa"], correcta: 2 },
+      { pregunta: "Una onda tiene una frecuencia de 5 Hz y una longitud de onda de 2 metros. ¿Cuál es su velocidad?", opciones: ["10 m/s", "7 m/s", "2.5 m/s", "1 m/s"], correcta: 0 },
+      { pregunta: "¿Qué ocurre en el efecto Doppler?", opciones: ["La frecuencia del sonido cambia según el movimiento del emisor o receptor", "La luz cambia de color en el vacío", "El volumen del sonido se hace más fuerte", "El sonido se detiene cuando hay movimiento"], correcta: 0 },
+      { pregunta: "Si una ambulancia se acerca a ti, ¿cómo percibes el sonido de la sirena?", opciones: ["Más grave", "No se escucha", "Más agudo", "Igual"], correcta: 2 },
+      { pregunta: "Una onda de luz tiene una frecuencia de 6x10^14 Hz. Si la velocidad de la luz es 3x10^8 m/s, ¿cuál es su longitud de onda?", opciones: ["0.5 m", "5x10^7 m", "5x10^-7 m", "5 m"], correcta: 2 },
+      { pregunta: "¿Qué tipo de onda es la luz?", opciones: ["Sonora", "Electromagnética", "Mecánica", "Longitudinal"], correcta: 1 },
+      { pregunta: "¿Cuál es la unidad de medida de la frecuencia?", opciones: ["Newton", "Hertz", "Metro", "Julio"], correcta: 1 }
+    ];
+
+    let seleccionadas = [];
+    let respuestasUsuario = [];
+    let nombreEstudiante = "";
+
+    document.getElementById("startBtn").addEventListener("click", startExam);
+    document.getElementById("showResultsBtn").addEventListener("click", showResults);
+
+    function startExam() {
+      const nombre = document.getElementById("studentName").value.trim();
+      if (!nombre) {
+        alert("Por favor, ingresa tu nombre.");
+        return;
+      }
+      nombreEstudiante = nombre;
+      seleccionadas = [];
+      respuestasUsuario = [];
+      document.getElementById("resultSection").innerHTML = "";
+      document.getElementById("storedResults").style.display = "none";
+
+      while (seleccionadas.length < 5) {
+        const i = Math.floor(Math.random() * preguntas.length);
+        if (!seleccionadas.includes(i)) {
+          seleccionadas.push(i);
+        }
+      }
+
+      const examDiv = document.getElementById("examSection");
+      examDiv.innerHTML = `<h2>Examen para ${nombreEstudiante}</h2>`;
+      seleccionadas.forEach((idx, i) => {
+        const q = preguntas[idx];
+        let html = `<div class="question"><strong>Pregunta ${i + 1}:</strong> ${q.pregunta}<br>`;
+        q.opciones.forEach((op, j) => {
+          html += `<label><input type="radio" name="q${i}" value="${j}"> ${String.fromCharCode(97 + j)}) ${op}</label><br>`;
+        });
+        html += `</div>`;
+        examDiv.innerHTML += html;
+      });
+      examDiv.innerHTML += `<button onclick="submitExam()">Finalizar Examen</button>`;
+      examDiv.style.display = "block";
+    }
+
+    function submitExam() {
+      let nota = 0;
+      const resultadosHTML = [];
+
+      for (let i = 0; i < 5; i++) {
+        const seleccion = document.querySelector(`input[name="q${i}"]:checked`);
+        const idx = seleccionadas[i];
+        const pregunta = preguntas[idx];
+        const correcta = pregunta.correcta;
+        let userResp = -1;
+
+        if (seleccion) {
+          userResp = parseInt(seleccion.value);
+          if (userResp === correcta) nota++;
+        }
+
+        respuestasUsuario.push(userResp);
+
+        resultadosHTML.push(`
+          <div class="question">
+            <strong>Pregunta ${i + 1}:</strong> ${pregunta.pregunta}<br>
+            Tu respuesta: <span class="${userResp === correcta ? 'correct' : 'incorrect'}">${pregunta.opciones[userResp] || 'Sin responder'}</span><br>
+            Respuesta correcta: <strong>${pregunta.opciones[correcta]}</strong>
+          </div>
+        `);
+      }
+
+      // Guardar resultado
+      const resultados = JSON.parse(localStorage.getItem("resultados") || "[]");
+      resultados.push({ nombre: nombreEstudiante, nota });
+      localStorage.setItem("resultados", JSON.stringify(resultados));
+
+      document.getElementById("resultSection").innerHTML = `
+        <div class="result"><strong>${nombreEstudiante}, tu nota es:</strong> ${nota} de 5</div>
+        ${resultadosHTML.join("")}
+      `;
+      document.getElementById("examSection").style.display = "none";
+    }
+
+    function showResults() {
+      const resultados = JSON.parse(localStorage.getItem("resultados") || "[]");
+      if (resultados.length === 0) {
+        alert("No hay resultados guardados.");
+        return;
+      }
+
+      let html = `<h2>Resultados guardados</h2><ul>`;
+      resultados.forEach(r => {
+        html += `<li>${r.nombre}: ${r.nota} / 5</li>`;
+      });
+      html += `</ul>`;
+
+      const resultDiv = document.getElementById("storedResults");
+      resultDiv.innerHTML = html;
+      resultDiv.style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
